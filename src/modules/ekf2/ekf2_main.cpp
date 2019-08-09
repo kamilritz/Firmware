@@ -118,6 +118,10 @@ public:
 	int print_status() override;
 
 private:
+
+    vehicle_odometry_s _ev_odom;
+
+
 	int getRangeSubIndex(); ///< get subscription index of first downward-facing range sensor
 
 	template<typename Param>
@@ -277,15 +281,16 @@ private:
 
 	uORB::Publication<ekf2_innovations_s>			_estimator_innovations_pub{ORB_ID(ekf2_innovations)};
 	uORB::Publication<ekf2_timestamps_s>			_ekf2_timestamps_pub{ORB_ID(ekf2_timestamps)};
-	uORB::Publication<ekf_gps_drift_s>			_ekf_gps_drift_pub{ORB_ID(ekf_gps_drift)};
+    uORB::Publication<ekf_gps_drift_s>              _ekf_gps_drift_pub{ORB_ID(ekf_gps_drift)};
 	uORB::Publication<ekf_gps_position_s>			_blended_gps_pub{ORB_ID(ekf_gps_position)};
 	uORB::Publication<estimator_status_s>			_estimator_status_pub{ORB_ID(estimator_status)};
-	uORB::Publication<sensor_bias_s>			_sensor_bias_pub{ORB_ID(sensor_bias)};
+    uORB::Publication<sensor_bias_s>                _sensor_bias_pub{ORB_ID(sensor_bias)};
 	uORB::Publication<vehicle_attitude_s>			_att_pub{ORB_ID(vehicle_attitude)};
 	uORB::Publication<vehicle_odometry_s>			_vehicle_odometry_pub{ORB_ID(vehicle_odometry)};
-	uORB::Publication<wind_estimate_s>			_wind_pub{ORB_ID(wind_estimate)};
+    uORB::Publication<wind_estimate_s>              _wind_pub{ORB_ID(wind_estimate)};
 	uORB::PublicationData<vehicle_global_position_s>	_vehicle_global_position_pub{ORB_ID(vehicle_global_position)};
 	uORB::PublicationData<vehicle_local_position_s>		_vehicle_local_position_pub{ORB_ID(vehicle_local_position)};
+    uORB::PublicationData<vehicle_odometry_s>		_vehicle_aligned_visual_odometry_pub{ORB_ID(vehicle_aligned_visual_odometry)};
 
 	Ekf _ekf;
 
@@ -749,6 +754,10 @@ void Ekf2::run()
 		ekf2_timestamps.vehicle_magnetometer_timestamp_rel = ekf2_timestamps_s::RELATIVE_TIMESTAMP_INVALID;
 		ekf2_timestamps.visual_odometry_timestamp_rel = ekf2_timestamps_s::RELATIVE_TIMESTAMP_INVALID;
 
+//        printf("%i \n",(int)_param_ekf2_aid_mask.get());
+//        printf("%i \n",(int)_param_ekf2_hgt_mode.get());
+
+
 		// update all other topics if they have new data
 		if (_status_sub.update(&vehicle_status)) {
 
@@ -1157,7 +1166,7 @@ void Ekf2::run()
 			// copy both attitude & position, we need both to fill a single ext_vision_message
 			vehicle_odometry_s ev_odom;
 			_ev_odom_sub.copy(&ev_odom);
-
+            _ev_odom = ev_odom;
 			ext_vision_message ev_data;
 
 			// check for valid position data
@@ -1438,6 +1447,30 @@ void Ekf2::run()
 
 				// publish vehicle odometry data
 				_vehicle_odometry_pub.publish(odom);
+
+                // publish vehicle visual data after aligning
+                Dcmf ev_rot_mat = _ekf.get_ev_rot_mat();
+                vehicle_odometry_s aligned_ev_odom = _ev_odom;
+
+                // Rotate the
+                Vector3f aligned_pos = ev_rot_mat * Vector3f(_ev_odom.x,_ev_odom.y,_ev_odom.z);
+                aligned_ev_odom.x = aligned_pos(0);
+                aligned_ev_odom.y = aligned_pos(1);
+                aligned_ev_odom.z = aligned_pos(2);
+
+                Vector3f aligned_vel = ev_rot_mat * Vector3f(_ev_odom.vx,_ev_odom.vy,_ev_odom.vz);
+                aligned_ev_odom.vx = aligned_vel(0);
+                aligned_ev_odom.vy = aligned_vel(1);
+                aligned_ev_odom.vz = aligned_vel(2);
+
+                Quatf ev_delta_quat = Quatf(ev_rot_mat);
+                Quatf ev_quat_aligned = matrix::Quatf(_ev_odom.q) * ev_delta_quat;
+                for (unsigned i = 0; i < 4; i++) {
+                    aligned_ev_odom.q[i] = ev_quat_aligned(i);
+                }
+                _vehicle_aligned_visual_odometry_pub.publish(aligned_ev_odom);
+
+                // TODO: rotate quaterion, publish it and add to logger
 
 				if (_ekf.global_position_is_valid() && !_preflt_fail) {
 					// generate and publish global position data
