@@ -1037,7 +1037,7 @@ MavlinkReceiver::handle_message_odometry(mavlink_message_t *msg)
         /* The quaternion of the ODOMETRY msg represents a rotation  from body frame to
          * earth/local frame, in px4 quaternion are ment to be rotation from local frame to body*/
         const matrix::Quatf q_body_to_local(odom.q);
-        const matrix::Quatf q_local_to_body = q_body_to_earth.inversed();
+        const matrix::Quatf q_local_to_body = q_body_to_local.inversed();
 
         q_local_to_body.copyTo(odometry.q);
 
