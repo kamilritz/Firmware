@@ -118,6 +118,10 @@ public:
 	int print_status() override;
 
 private:
+
+    	vehicle_odometry_s _ev_odom;
+
+
 	int getRangeSubIndex(); ///< get subscription index of first downward-facing range sensor
 
 	template<typename Param>
@@ -286,6 +290,7 @@ private:
 	uORB::Publication<wind_estimate_s>			_wind_pub{ORB_ID(wind_estimate)};
 	uORB::PublicationData<vehicle_global_position_s>	_vehicle_global_position_pub{ORB_ID(vehicle_global_position)};
 	uORB::PublicationData<vehicle_local_position_s>		_vehicle_local_position_pub{ORB_ID(vehicle_local_position)};
+    	uORB::PublicationData<vehicle_odometry_s>		_vehicle_aligned_visual_odometry_pub{ORB_ID(vehicle_aligned_visual_odometry)};
 
 	Ekf _ekf;
 
@@ -1157,7 +1162,7 @@ void Ekf2::run()
 			// copy both attitude & position, we need both to fill a single ext_vision_message
 			vehicle_odometry_s ev_odom;
 			_ev_odom_sub.copy(&ev_odom);
-
+    			_ev_odom = ev_odom;
 			ext_vision_message ev_data;
 
 			// check for valid position data
@@ -1438,6 +1443,29 @@ void Ekf2::run()
 
 				// publish vehicle odometry data
 				_vehicle_odometry_pub.publish(odom);
+
+				// publish vehicle visual data after aligning
+				Dcmf ev_rot_mat = _ekf.get_ev_rot_mat();
+				vehicle_odometry_s aligned_ev_odom = _ev_odom;
+
+				// Rotate the
+				Vector3f aligned_pos = ev_rot_mat * Vector3f(_ev_odom.x,_ev_odom.y,_ev_odom.z);
+				aligned_ev_odom.x = aligned_pos(0);
+				aligned_ev_odom.y = aligned_pos(1);
+				aligned_ev_odom.z = aligned_pos(2);
+
+				Vector3f aligned_vel = ev_rot_mat * Vector3f(_ev_odom.vx,_ev_odom.vy,_ev_odom.vz);
+				aligned_ev_odom.vx = aligned_vel(0);
+				aligned_ev_odom.vy = aligned_vel(1);
+				aligned_ev_odom.vz = aligned_vel(2);
+
+				Quatf ev_delta_quat = Quatf(ev_rot_mat);
+				Quatf ev_quat_aligned = matrix::Quatf(_ev_odom.q) * ev_delta_quat;
+				for (unsigned i = 0; i < 4; i++) {
+				    aligned_ev_odom.q[i] = ev_quat_aligned(i);
+				}
+				_vehicle_aligned_visual_odometry_pub.publish(aligned_ev_odom);
+
 
 				if (_ekf.global_position_is_valid() && !_preflt_fail) {
 					// generate and publish global position data
