@@ -1,7 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017 Fan.zhang. All rights reserved. 421395590@qq.com
- *   Copyright (c) 2017 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,69 +33,35 @@
 
 #pragma once
 
-/*! @file rpi_rc_in.h
- * Raspberry Pi driver to publish RC input from shared memory.
- * It requires the ppmdecode program (https://github.com/crossa/raspberry-pi-ppm-rc-in)
- */
+#include "sensor_bridge.hpp"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <sys/ioctl.h>
 
-#include <px4_config.h>
-#include <px4_work_queue/ScheduledWorkItem.hpp>
-#include <px4_defines.h>
+#include <uORB/topics/optical_flow.h>
 
-#include <drivers/drv_hrt.h>
+#include <com/hex/equipment/flow/Measurement.hpp>
 
-#include <uORB/uORB.h>
-#include <uORB/topics/input_rc.h>
-
-#define RCINPUT_MEASURE_INTERVAL_US 20000
-
-namespace rpi_rc_in
-{
-class RcInput : public px4::ScheduledWorkItem
+class UavcanFlowBridge : public UavcanCDevSensorBridgeBase
 {
 public:
-	RcInput() : ScheduledWorkItem(px4::wq_configurations::hp_default) {}
+	static const char *const NAME;
 
-	~RcInput();
+	UavcanFlowBridge(uavcan::INode &node);
 
-	/** @return 0 on success, -errno on failure */
-	int start();
+	const char *get_name() const override { return NAME; }
 
-	/** @return 0 on success, -errno on failure */
-	void stop();
-
-	bool is_running()
-	{
-		return _is_running;
-	}
+	int init() override;
 
 private:
-	void Run() override;
-	void _measure();
 
-	int rpi_rc_init();
+	void flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex::equipment::flow::Measurement> &msg);
 
-	bool _should_exit = false;
-	bool _is_running = false;
-	orb_advert_t _rcinput_pub = nullptr;
-	int _channels = 8; //D8R-II plus
-	struct input_rc_s _data = {};
+	typedef uavcan::MethodBinder < UavcanFlowBridge *,
+		void (UavcanFlowBridge::*)
+		(const uavcan::ReceivedDataStructure<com::hex::equipment::flow::Measurement> &) >
+		FlowCbBinder;
 
-	int *_mem = nullptr;
-	key_t _key = 4096; ///< shared memory key (matches the ppmdecode program's key)
-	int _shmid = 0;
+	uavcan::Subscriber<com::hex::equipment::flow::Measurement, FlowCbBinder> _sub_flow;
+
 };
-
-static void usage(const char *reason);
-static RcInput *rc_input = nullptr;
-}
-extern "C" __EXPORT int rpi_rc_in_main(int argc, char **argv);

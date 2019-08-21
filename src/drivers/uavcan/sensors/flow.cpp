@@ -1,7 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017 Fan.zhang. All rights reserved. 421395590@qq.com
- *   Copyright (c) 2017 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,71 +31,53 @@
  *
  ****************************************************************************/
 
-#pragma once
-
-/*! @file rpi_rc_in.h
- * Raspberry Pi driver to publish RC input from shared memory.
- * It requires the ppmdecode program (https://github.com/crossa/raspberry-pi-ppm-rc-in)
- */
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
-
-#include <px4_config.h>
-#include <px4_work_queue/ScheduledWorkItem.hpp>
-#include <px4_defines.h>
+#include "flow.hpp"
 
 #include <drivers/drv_hrt.h>
 
-#include <uORB/uORB.h>
-#include <uORB/topics/input_rc.h>
+const char *const UavcanFlowBridge::NAME = "flow";
 
-#define RCINPUT_MEASURE_INTERVAL_US 20000
-
-namespace rpi_rc_in
+UavcanFlowBridge::UavcanFlowBridge(uavcan::INode &node) :
+	UavcanCDevSensorBridgeBase("uavcan_flow", "/dev/uavcan/flow", "/dev/flow", ORB_ID(optical_flow)),
+	_sub_flow(node)
 {
-class RcInput : public px4::ScheduledWorkItem
+}
+
+int
+UavcanFlowBridge::init()
 {
-public:
-	RcInput() : ScheduledWorkItem(px4::wq_configurations::hp_default) {}
+	int res = device::CDev::init();
 
-	~RcInput();
-
-	/** @return 0 on success, -errno on failure */
-	int start();
-
-	/** @return 0 on success, -errno on failure */
-	void stop();
-
-	bool is_running()
-	{
-		return _is_running;
+	if (res < 0) {
+		return res;
 	}
 
-private:
-	void Run() override;
-	void _measure();
+	res = _sub_flow.start(FlowCbBinder(this, &UavcanFlowBridge::flow_sub_cb));
 
-	int rpi_rc_init();
+	if (res < 0) {
+		DEVICE_LOG("failed to start uavcan sub: %d", res);
+		return res;
+	}
 
-	bool _should_exit = false;
-	bool _is_running = false;
-	orb_advert_t _rcinput_pub = nullptr;
-	int _channels = 8; //D8R-II plus
-	struct input_rc_s _data = {};
-
-	int *_mem = nullptr;
-	key_t _key = 4096; ///< shared memory key (matches the ppmdecode program's key)
-	int _shmid = 0;
-};
-
-static void usage(const char *reason);
-static RcInput *rc_input = nullptr;
+	return 0;
 }
-extern "C" __EXPORT int rpi_rc_in_main(int argc, char **argv);
+
+void
+UavcanFlowBridge::flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex::equipment::flow::Measurement> &msg)
+{
+	optical_flow_s flow{};
+
+	flow.timestamp = hrt_absolute_time();
+	flow.pixel_flow_x_integral = msg.flow_integral[0];
+	flow.pixel_flow_y_integral = msg.flow_integral[1];
+
+	flow.gyro_x_rate_integral = msg.rate_gyro_integral[0];
+	flow.gyro_y_rate_integral = msg.rate_gyro_integral[1];
+
+	flow.quality = msg.quality;
+	flow.max_flow_rate = 5.0f;       // Datasheet: 7.4 rad/s
+	flow.min_ground_distance = 0.1f; // Datasheet: 80mm
+	flow.max_ground_distance = 30.0f; // Datasheet: infinity
+
+	publish(msg.getSrcNodeID().get(), &flow);
+}
