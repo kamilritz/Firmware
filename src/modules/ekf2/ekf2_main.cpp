@@ -1447,25 +1447,25 @@ void Ekf2::run()
 
 				// publish external visual odometry after fixed frame alignment if new odometry is received
 				if (new_ev_data_received == true) {				
-					Dcmf ev_rot_mat = _ekf.get_ev_rot_mat();
+					Dcmf ev_rot_mat = _ekf.get_ev_rot_mat(); // rotates from EV to EKF reference frame
 					Quatf ev_delta_quat = Quatf(ev_rot_mat);
 					ev_delta_quat.normalize();
 
 					vehicle_odometry_s aligned_ev_odom = _ev_odom;
 
 					// Rotate external position and velocity into local_origin_NED frame
-					Vector3f aligned_pos = ev_rot_mat.transpose() * Vector3f(_ev_odom.x, _ev_odom.y, _ev_odom.z);
+					Vector3f aligned_pos = ev_rot_mat * Vector3f(_ev_odom.x, _ev_odom.y, _ev_odom.z);
 					aligned_ev_odom.x = aligned_pos(0);
 					aligned_ev_odom.y = aligned_pos(1);
 					aligned_ev_odom.z = aligned_pos(2);
 
-					Vector3f aligned_vel = ev_rot_mat.transpose() * Vector3f(_ev_odom.vx, _ev_odom.vy, _ev_odom.vz);
+					Vector3f aligned_vel = ev_rot_mat * Vector3f(_ev_odom.vx, _ev_odom.vy, _ev_odom.vz);
 					aligned_ev_odom.vx = aligned_vel(0);
 					aligned_ev_odom.vy = aligned_vel(1);
 					aligned_ev_odom.vz = aligned_vel(2);
 
 					// Compute orientation in local_origin_NED frame
-					Quatf ev_quat_aligned = ev_delta_quat.inversed() * matrix::Quatf(_ev_odom.q) ;
+					Quatf ev_quat_aligned = ev_delta_quat * matrix::Quatf(_ev_odom.q) ;
 					ev_quat_aligned.normalize();
 
 					for (unsigned i = 0; i < 4; i++) {
