@@ -29,7 +29,10 @@ float32 y			# East position
 float32 z			# Down position
 
 # Orientation quaternion. First value NaN if invalid/unknown
-float32[4] q			# Quaternion rotation from NED earth-fixed frame to XYZ body frame
+float32[4] q			# Quaternion rotation from parent fixed frame to XYZ body frame
+
+float32[4] q_err		# Quaternion rotation from parent fixed frame to local fixed frame
+
 
 # Row-major representation of 6x6 pose cross-covariance matrix URT.
 # NED earth-fixed frame.

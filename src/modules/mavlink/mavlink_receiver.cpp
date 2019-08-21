@@ -1029,17 +1029,17 @@ MavlinkReceiver::handle_message_odometry(mavlink_message_t *msg)
 
 	odometry.timestamp = _mavlink_timesync.sync_stamp(odom.time_usec);
 
-        /* The position is in a local NED frame */
+	/* The position is in a local NED frame */
 	odometry.x = odom.x;
 	odometry.y = odom.y;
 	odometry.z = odom.z;
 
-        /* The quaternion of the ODOMETRY msg represents a rotation  from body frame to
-         * earth/local frame, in px4 quaternion are ment to be rotation from local frame to body*/
-        const matrix::Quatf q_body_to_local(odom.q);
-        const matrix::Quatf q_local_to_body = q_body_to_local.inversed();
-
-        q_local_to_body.copyTo(odometry.q);
+	/* The quaternion of the ODOMETRY msg represents a rotation  from body frame to
+	 * earth/local frame, in px4 quaternion are ment to be rotation from local frame to body*/
+	matrix::Quatf q_body_to_local(odom.q);
+//        const matrix::Quatf q_local_to_body = q_body_to_local.inversed();
+	q_body_to_local.normalize();
+	q_body_to_local.copyTo(odometry.q);
 
 	// TODO:
 	// - add a MAV_FRAME_*_OTHER to the Mavlink MAV_FRAME enum IOT define
@@ -1063,19 +1063,19 @@ MavlinkReceiver::handle_message_odometry(mavlink_message_t *msg)
 	}
 
 
-        /*
-         * PX4 expects the body's linear velocity in the local frame,
-         * the linear velocity is rotated from the odom child_frame to the
-         * local NED frame. The angular velocity needs to be expressed in the
-         * body (fcu_frd) frame.
-         */
-        if (odom.child_frame_id == MAV_FRAME_BODY_FRD) {
-                /* Linear velocity has to be rotated to the local NED frame
-                 * Angular velocities are already in the right body frame  */
-                const matrix::Dcmf R_body_to_local = matrix::Dcmf(q_body_to_local);
+	/*
+	 * PX4 expects the body's linear velocity in the local frame,
+	 * the linear velocity is rotated from the odom child_frame to the
+	 * local NED frame. The angular velocity needs to be expressed in the
+	 * body (fcu_frd) frame.
+	 */
+	if (odom.child_frame_id == MAV_FRAME_BODY_FRD) {
+		/* Linear velocity has to be rotated to the local NED frame
+		 * Angular velocities are already in the right body frame  */
+		const matrix::Dcmf R_body_to_local = matrix::Dcmf(q_body_to_local);
 
 		/* the linear velocities needs to be transformed to the local NED frame */
-                matrix::Vector3<float> linvel_local(R_body_to_local * matrix::Vector3<float>(odom.vx, odom.vy, odom.vz));
+		matrix::Vector3<float> linvel_local(R_body_to_local * matrix::Vector3<float>(odom.vx, odom.vy, odom.vz));
 		odometry.vx = linvel_local(0);
 		odometry.vy = linvel_local(1);
 		odometry.vz = linvel_local(2);

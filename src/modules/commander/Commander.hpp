@@ -239,11 +239,11 @@ private:
 	bool		_avoidance_system_status_change{false};
 	uint8_t	_datalink_last_status_avoidance_system{telemetry_status_s::MAV_STATE_UNINIT};
 
-    hrt_abstime	_datalink_last_heartbeat_vio_system{0};
-    bool				_vio_system_lost{false};
+	hrt_abstime	_datalink_last_heartbeat_vio_system{0};
+	bool				_vio_system_lost{false};
 
-    bool		_vio_system_status_change{false};
-    uint8_t	_datalink_last_status_vio_system{telemetry_status_s::MAV_STATE_UNINIT};
+	bool		_vio_system_status_change{false};
+	uint8_t	_datalink_last_status_vio_system{telemetry_status_s::MAV_STATE_UNINIT};
 
 	uORB::Subscription _iridiumsbd_status_sub{ORB_ID(iridiumsbd_status)};
 
@@ -260,7 +260,7 @@ private:
 	systemlib::Hysteresis	_auto_disarm_killed{false};
 
 	bool _print_avoidance_msg_once{false};
-    bool _print_vio_msg_once{false};
+	bool _print_vio_msg_once{false};
 
 
 	// Subscriptions
