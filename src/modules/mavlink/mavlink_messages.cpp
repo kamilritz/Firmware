@@ -2469,7 +2469,6 @@ protected:
 
 			// Rotate linear and angular velocity from local NED to body-NED frame
 			matrix::Vector3f linvel_body(R_body_to_local.transpose() * matrix::Vector3f(odom.vx, odom.vy, odom.vz));
-//            matrix::Vector3f linvel_body( matrix::Vector3f(odom.vx, odom.vy, odom.vz));
 
 			// Current linear velocity
 			msg.vx = linvel_body(0);

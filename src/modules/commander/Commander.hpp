@@ -260,8 +260,6 @@ private:
 	systemlib::Hysteresis	_auto_disarm_killed{false};
 
 	bool _print_avoidance_msg_once{false};
-	bool _print_vio_msg_once{false};
-
 
 	// Subscriptions
 	uORB::Subscription					_vehicle_acceleration_sub{ORB_ID(vehicle_acceleration)};

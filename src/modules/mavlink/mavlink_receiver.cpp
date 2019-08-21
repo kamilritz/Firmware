@@ -1029,15 +1029,14 @@ MavlinkReceiver::handle_message_odometry(mavlink_message_t *msg)
 
 	odometry.timestamp = _mavlink_timesync.sync_stamp(odom.time_usec);
 
-	/* The position is in a local NED frame */
+	/* The position is in a local FRD frame */
 	odometry.x = odom.x;
 	odometry.y = odom.y;
 	odometry.z = odom.z;
 
-	/* The quaternion of the ODOMETRY msg represents a rotation  from body frame to
-	 * earth/local frame, in px4 quaternion are ment to be rotation from local frame to body*/
+	/* The quaternion of the ODOMETRY msg represents a rotation from body frame to
+	 * a local frame*/
 	matrix::Quatf q_body_to_local(odom.q);
-//        const matrix::Quatf q_local_to_body = q_body_to_local.inversed();
 	q_body_to_local.normalize();
 	q_body_to_local.copyTo(odometry.q);
 

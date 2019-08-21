@@ -3808,7 +3808,6 @@ void Commander::data_link_check(bool &status_changed)
 						mavlink_log_info(&mavlink_log_pub, "External vision system regained");
 						status_changed = true;
 						_vio_system_lost = false;
-//						status_flags.avoidance_system_valid = true; // Do we want this state?
 					}
 				}
 
@@ -3889,50 +3888,33 @@ void Commander::data_link_check(bool &status_changed)
 		}
 	}
 
-	// VIO SYSTEM state check (only if it is enabled)
-	if (true) {
-
-		//if vio never started
-		if ((_datalink_last_heartbeat_vio_system == 0 /*&&
-              hrt_elapsed_time(&_datalink_last_heartbeat_vio_system) >  should i also add an parameter .get() * 1_s*/)
-		    || _datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_UNINIT) {
-			if (!_print_vio_msg_once) {
-				mavlink_log_critical(&mavlink_log_pub, "External system not available");
-				_print_vio_msg_once = true;
-
-			}
-		}
-
-		//if heartbeats stop
-		if (!_vio_system_lost && (_datalink_last_heartbeat_vio_system > 0)
-		    && (hrt_elapsed_time(&_datalink_last_heartbeat_vio_system) > 5_s)) {
-			_vio_system_lost = true;
-			mavlink_log_critical(&mavlink_log_pub, "External vision system lost");
-//            status_flags.avoidance_system_valid = false;
-			_print_vio_msg_once = false;
-		}
-
-		//if status changed
-		if (_vio_system_status_change) {
-
-			if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_ACTIVE) {
-				mavlink_log_info(&mavlink_log_pub, "External vision system connected");
-				status_flags.avoidance_system_valid = true;
-			}
-
-			if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_CRITICAL) {
-				mavlink_log_info(&mavlink_log_pub, "External vision system critical");
-			}
-
-			if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_FLIGHT_TERMINATION) {
-				mavlink_log_critical(&mavlink_log_pub, "External vision system not usable");
-//                status_flags.avoidance_system_valid = false;
-				status_changed = true;
-			}
-
-			_vio_system_status_change = false;
-		}
+	// VIO SYSTEM state check 
+	// if heartbeats stop
+	if (!_vio_system_lost && (_datalink_last_heartbeat_vio_system > 0)
+	    && (hrt_elapsed_time(&_datalink_last_heartbeat_vio_system) > 2_s)) {
+		_vio_system_lost = true;
+		mavlink_log_critical(&mavlink_log_pub, "External vision system lost");
 	}
+
+	//if status changed
+	if (_vio_system_status_change) {
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_ACTIVE) {
+			mavlink_log_info(&mavlink_log_pub, "External vision system running");
+		}
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_CRITICAL) {
+			mavlink_log_info(&mavlink_log_pub, "External vision system critical");
+		}
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_FLIGHT_TERMINATION) {
+			mavlink_log_critical(&mavlink_log_pub, "External vision system crashed");
+			status_changed = true;
+		}
+
+		_vio_system_status_change = false;
+	}
+	
 
 	// high latency data link loss failsafe
 	if (_high_latency_datalink_heartbeat > 0
