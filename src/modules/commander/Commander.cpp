@@ -3615,6 +3615,22 @@ void Commander::data_link_check()
 					}
 				}
 
+                if (telemetry.remote_component_id == telemetry_status_s::COMPONENT_ID_VISUAL_INERTIAL_ODOMETRY) {
+                    if (telemetry.heartbeat_time != _datalink_last_heartbeat_vio_system) {
+                        _vio_system_status_change = _datalink_last_status_vio_system != telemetry.remote_system_status;
+                    }
+
+                    _datalink_last_heartbeat_vio_system = telemetry.heartbeat_time;
+                    _datalink_last_status_vio_system = telemetry.remote_system_status;
+
+
+					if (_vio_system_lost) {
+						mavlink_log_info(&mavlink_log_pub, "External vision system regained");
+						status_changed = true;
+						_vio_system_lost = false;
+					}
+				}
+
 				break;
 			}
 		}
@@ -3692,6 +3708,32 @@ void Commander::data_link_check()
 		}
 	}
 
+	// VIO SYSTEM state check
+	// if heartbeats stop
+	if (!_vio_system_lost && (_datalink_last_heartbeat_vio_system > 0)
+	    && (hrt_elapsed_time(&_datalink_last_heartbeat_vio_system) > 2_s)) {
+		_vio_system_lost = true;
+		mavlink_log_critical(&mavlink_log_pub, "External vision system lost");
+	}
+
+	//if status changed
+	if (_vio_system_status_change) {
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_ACTIVE) {
+			mavlink_log_info(&mavlink_log_pub, "External vision system running");
+		}
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_CRITICAL) {
+			mavlink_log_info(&mavlink_log_pub, "External vision system critical");
+		}
+
+		if (_datalink_last_status_vio_system == telemetry_status_s::MAV_STATE_FLIGHT_TERMINATION) {
+			mavlink_log_critical(&mavlink_log_pub, "External vision system crashed");
+			status_changed = true;
+		}
+
+		_vio_system_status_change = false;
+	}
 
 	// high latency data link loss failsafe
 	if (_high_latency_datalink_heartbeat > 0

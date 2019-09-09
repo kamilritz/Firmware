@@ -372,6 +372,15 @@ private:
 	safety_s		_safety{};
 	vtol_vehicle_status_s	_vtol_status{};
 
+	hrt_abstime	_datalink_last_heartbeat_vio_system{0};
+	bool				_vio_system_lost{false};
+
+	bool		_vio_system_status_change{false};
+	uint8_t	_datalink_last_status_vio_system{telemetry_status_s::MAV_STATE_UNINIT};
+	bool _print_avoidance_msg_once{false};
+	bool _print_vio_msg_once{false};
+
+
 	// Subscriptions
 	uORB::Subscription					_actuator_controls_sub{ORB_ID_VEHICLE_ATTITUDE_CONTROLS};
 	uORB::Subscription					_battery_sub{ORB_ID(battery_status)};
