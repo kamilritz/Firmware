@@ -59,9 +59,10 @@ public:
 	 * @param meta The uORB metadata (usually from the ORB_ID() macro) for the topic.
 	 * @param priority The priority for multi pub/sub, 0 means don't publish as multi
 	 */
-	PublicationMulti(const orb_metadata *meta, uint8_t priority = ORB_PRIO_DEFAULT) :
+	PublicationMulti(const orb_metadata *meta, uint8_t priority = ORB_PRIO_DEFAULT, int instance = 0) :
 		_meta(meta),
-		_priority(priority)
+		_priority(priority),
+		_instance(instance)
 	{}
 
 	~PublicationMulti() { orb_unadvertise(_handle); }
@@ -76,8 +77,7 @@ public:
 			return (orb_publish(_meta, _handle, &data) == PX4_OK);
 
 		} else {
-			int instance = 0;
-			orb_advert_t handle = orb_advertise_multi(_meta, &data, &instance, _priority);
+			orb_advert_t handle = orb_advertise_multi(_meta, &data, &_instance, _priority);
 
 			if (handle != nullptr) {
 				_handle = handle;
@@ -94,6 +94,7 @@ protected:
 	orb_advert_t _handle{nullptr};
 
 	const uint8_t _priority;
+	int _instance;
 };
 
 /**
@@ -109,8 +110,8 @@ public:
 	 * @param meta The uORB metadata (usually from the ORB_ID() macro) for the topic.
 	 * @param priority The priority for multi pub
 	 */
-	PublicationMultiData(const orb_metadata *meta, uint8_t priority = ORB_PRIO_DEFAULT) :
-		PublicationMulti<T>(meta, priority)
+	PublicationMultiData(const orb_metadata *meta, uint8_t priority = ORB_PRIO_DEFAULT, int instance = 0) :
+		PublicationMulti<T>(meta, priority, instance)
 	{}
 
 	~PublicationMultiData() = default;
