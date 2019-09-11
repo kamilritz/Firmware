@@ -421,6 +421,8 @@ private:
 		// vision estimate fusion
 		(ParamFloat<px4::params::EKF2_EVP_NOISE>)
 		_param_ekf2_evp_noise,	///< default position observation noise for exernal vision measurements (m)
+		(ParamFloat<px4::params::EKF2_EVV_NOISE>)
+		_param_ekf2_evv_noise,	///< default velocity observation noise for exernal vision measurements (m)
 		(ParamFloat<px4::params::EKF2_EVA_NOISE>)
 		_param_ekf2_eva_noise,	///< default angular observation noise for exernal vision measurements (rad)
 		(ParamExtFloat<px4::params::EKF2_EV_GATE>)
@@ -1186,6 +1188,24 @@ void Ekf2::run()
 				} else {
 					ev_data.posErr = _param_ekf2_evp_noise.get();
 					ev_data.hgtErr = _param_ekf2_evp_noise.get();
+				}
+			}
+
+			// check for valid velocity data
+			if (PX4_ISFINITE(ev_odom.vx) && PX4_ISFINITE(ev_odom.vy) && PX4_ISFINITE(ev_odom.vz)) {
+				ev_data.velNED(0) = ev_odom.vx;
+				ev_data.velNED(1) = ev_odom.vy;
+				ev_data.velNED(2) = ev_odom.vz;
+
+				// velocity measurement error from parameters
+				if (PX4_ISFINITE(ev_odom.pose_covariance[ev_odom.COVARIANCE_MATRIX_X_VARIANCE])) {
+					ev_data.velErr = fmaxf(_param_ekf2_evv_noise.get(),
+							       sqrtf(fmaxf(ev_odom.pose_covariance[ev_odom.COVARIANCE_MATRIX_VX_VARIANCE],
+									   fmaxf(ev_odom.pose_covariance[ev_odom.COVARIANCE_MATRIX_VY_VARIANCE],
+											   ev_odom.pose_covariance[ev_odom.COVARIANCE_MATRIX_VZ_VARIANCE]))));
+
+				} else {
+					ev_data.velErr = _param_ekf2_evv_noise.get();
 				}
 			}
 
