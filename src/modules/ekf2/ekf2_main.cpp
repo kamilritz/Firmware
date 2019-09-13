@@ -1184,7 +1184,7 @@ void Ekf2::run()
 				ev_data.posNED(2) = _ev_odom.z;
 
 				// position measurement error from parameter
-				if (PX4_ISFINITE(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_X_VARIANCE])) {
+				if (PX4_ISFINITE(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_X_VARIANCE]) && false) {
 					ev_data.posErr = fmaxf(_param_ekf2_evp_noise.get(),
 							       sqrtf(fmaxf(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_X_VARIANCE],
 									   _ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_Y_VARIANCE])));
@@ -1204,9 +1204,9 @@ void Ekf2::run()
 				ev_data.velNED(2) = _ev_odom.vz;
 
 				// velocity measurement error from parameters
-				if (PX4_ISFINITE(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_X_VARIANCE])) {
+				if (PX4_ISFINITE(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_X_VARIANCE]) && false) {
 					ev_data.velErr = fmaxf(_param_ekf2_evv_noise.get(),
-								   sqrtf(fmaxf(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_VX_VARIANCE],
+							       sqrtf(fmaxf(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_VX_VARIANCE],
 									   fmaxf(_ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_VY_VARIANCE],
 											   _ev_odom.pose_covariance[_ev_odom.COVARIANCE_MATRIX_VZ_VARIANCE]))));
 
