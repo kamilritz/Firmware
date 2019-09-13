@@ -730,7 +730,7 @@ PARAM_DEFINE_FLOAT(EKF2_EVV_NOISE, 0.1f);
 PARAM_DEFINE_FLOAT(EKF2_EVA_NOISE, 0.05f);
 
 /**
- * Gate size for vision estimate fusion
+ * Gate size for vision estimator estimate fusion [deprecated]
  *
  * Sets the number of standard deviations used by the innovation consistency test.
  *
@@ -740,6 +740,30 @@ PARAM_DEFINE_FLOAT(EKF2_EVA_NOISE, 0.05f);
  * @decimal 1
  */
 PARAM_DEFINE_FLOAT(EKF2_EV_GATE, 5.0f);
+
+/**
+ * Gate size for vision velocity estimate fusion
+ *
+ * Sets the number of standard deviations used by the innovation consistency test.
+ *
+ * @group EKF2
+ * @min 1.0
+ * @unit SD
+ * @decimal 1
+ */
+PARAM_DEFINE_FLOAT(EKF2_EVV_GATE, 2.0f);
+
+/**
+ * Gate size for vision position fusion
+ *
+ * Sets the number of standard deviations used by the innovation consistency test.
+ *
+ * @group EKF2
+ * @min 1.0
+ * @unit SD
+ * @decimal 1
+ */
+PARAM_DEFINE_FLOAT(EKF2_EVP_GATE, 5.0f);
 
 /**
  * Measurement noise for the optical flow sensor when it's reported quality metric is at the maximum
