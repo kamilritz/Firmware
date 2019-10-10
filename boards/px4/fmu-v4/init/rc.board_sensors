@@ -49,9 +49,16 @@ then
 	mpu6000 -R 2 -T 20608 start
 fi
 
+
 # new sensor drivers (in testing)
 #icm20602 -R 8 start
 #icm20608g -R 8 start
+
+pmw3901 start
+
+# Start either MPU9250 or BMI160. They are both connected to the same SPI bus and use the same
+# chip select pin. There are different boards with either one of them and the WHO_AM_I register
+# will prevent the incorrect driver from a successful initialization.
 
 # mpu9250 internal SPI bus mpu9250 is rotated 90 deg yaw
 mpu9250 -R 2 start
