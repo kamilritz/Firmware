@@ -274,6 +274,7 @@ private:
 	uORB::PublicationData<vehicle_odometry_s> _pub_odom{ORB_ID(vehicle_odometry)};
 	uORB::PublicationData<estimator_status_s> _pub_est_status{ORB_ID(estimator_status)};
 	uORB::PublicationData<ekf2_innovations_s> _pub_innov{ORB_ID(ekf2_innovations)};
+	uORB::PublicationData<ekf2_innovations_s> _pub_innov_var{ORB_ID(ekf2_innovation_variances)};
 
 	// map projection
 	struct map_projection_reference_s _map_ref;

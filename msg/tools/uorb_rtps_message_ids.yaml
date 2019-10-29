@@ -327,4 +327,10 @@ rtps:
   - msg: vehicle_visual_odometry_aligned
     id: 169
     alias: vehicle_odometry
+  - msg: ekf2_innovation_variances
+    id: 170
+    alias: ekf2_innovations
+  - msg: ekf2_innovation_test_ratios
+    id: 171
+    alias: ekf2_innovations
   ########## multi topics: end ##########
