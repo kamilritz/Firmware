@@ -47,7 +47,7 @@ rtps:
   - msg: distance_sensor
     id: 17
     send: true
-  - msg: ekf2_innovations
+  - msg: ekf2_innovations_2
     id: 18
   - msg: ekf2_timestamps
     id: 19
@@ -327,10 +327,10 @@ rtps:
   - msg: vehicle_visual_odometry_aligned
     id: 169
     alias: vehicle_odometry
-  - msg: ekf2_innovation_variances
+  - msg: ekf2_innovation_variances_2
     id: 170
-    alias: ekf2_innovations
-  - msg: ekf2_innovation_test_ratios
+    alias: ekf2_innovations_2
+  - msg: ekf2_innovation_test_ratios_2
     id: 171
-    alias: ekf2_innovations
+    alias: ekf2_innovations_2
   ########## multi topics: end ##########

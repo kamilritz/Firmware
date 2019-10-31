@@ -31,4 +31,5 @@ float32 hagl		# height of ground innovation
 # The innovation test ratios are scalar values. In case the field is a vector,
 # the test ratio will be put in the first component of the vector.
 
-# TOPICS ekf2_innovations ekf2_innovation_variances ekf2_innovation_test_ratios
+# The topic name is extended with a "_2" to guarantee backwards compatibility
+# TOPICS ekf2_innovations_2 ekf2_innovation_variances_2 ekf2_innovation_test_ratios_2

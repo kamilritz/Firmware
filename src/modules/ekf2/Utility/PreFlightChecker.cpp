@@ -38,7 +38,7 @@
 
 #include "PreFlightChecker.hpp"
 
-void PreFlightChecker::update(const float dt, const ekf2_innovations_s &innov)
+void PreFlightChecker::update(const float dt, const ekf2_innovations_2_s &innov)
 {
 	const float alpha = InnovationLpf::computeAlphaFromDtAndTauInv(dt, _innov_lpf_tau_inv);
 
@@ -48,7 +48,7 @@ void PreFlightChecker::update(const float dt, const ekf2_innovations_s &innov)
 	_has_height_failed = preFlightCheckHeightFailed(innov, alpha);
 }
 
-bool PreFlightChecker::preFlightCheckHeadingFailed(const ekf2_innovations_s &innov, const float alpha)
+bool PreFlightChecker::preFlightCheckHeadingFailed(const ekf2_innovations_2_s &innov, const float alpha)
 {
 	const float heading_test_limit = selectHeadingTestLimit();
 	const float heading_innov_spike_lim = 2.0f * heading_test_limit;
@@ -69,7 +69,7 @@ float PreFlightChecker::selectHeadingTestLimit()
 	       : _heading_innov_test_lim; // less restrictive test limit
 }
 
-bool PreFlightChecker::preFlightCheckHorizVelFailed(const ekf2_innovations_s &innov, const float alpha)
+bool PreFlightChecker::preFlightCheckHorizVelFailed(const ekf2_innovations_2_s &innov, const float alpha)
 {
 	bool has_failed = false;
 
@@ -93,14 +93,14 @@ bool PreFlightChecker::preFlightCheckHorizVelFailed(const ekf2_innovations_s &in
 	return has_failed;
 }
 
-bool PreFlightChecker::preFlightCheckVertVelFailed(const ekf2_innovations_s &innov, const float alpha)
+bool PreFlightChecker::preFlightCheckVertVelFailed(const ekf2_innovations_2_s &innov, const float alpha)
 {
 	const float vel_d_innov = fmaxf(fabsf(innov.gps_vvel), fabs(innov.ev_vvel));
 	const float vel_d_innov_lpf = _filter_vel_d_innov.update(vel_d_innov, alpha, _vel_innov_spike_lim);
 	return checkInnovFailed(vel_d_innov, vel_d_innov_lpf, _vel_innov_test_lim);
 }
 
-bool PreFlightChecker::preFlightCheckHeightFailed(const ekf2_innovations_s &innov, const float alpha)
+bool PreFlightChecker::preFlightCheckHeightFailed(const ekf2_innovations_2_s &innov, const float alpha)
 {
 	const float hgt_innov = innov.gps_vpos;
 	const float hgt_innov_lpf = _filter_hgt_innov.update(hgt_innov, alpha, _hgt_innov_spike_lim);

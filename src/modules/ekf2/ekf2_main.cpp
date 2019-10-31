@@ -56,7 +56,7 @@
 #include <uORB/SubscriptionCallback.hpp>
 #include <uORB/topics/airspeed.h>
 #include <uORB/topics/distance_sensor.h>
-#include <uORB/topics/ekf2_innovations.h>
+#include <uORB/topics/ekf2_innovations_2.h>
 #include <uORB/topics/ekf2_timestamps.h>
 #include <uORB/topics/ekf_gps_position.h>
 #include <uORB/topics/estimator_status.h>
@@ -119,7 +119,7 @@ private:
 	PreFlightChecker _preflt_checker;
 	void runPreFlightChecks(float dt, const filter_control_status_u &control_status,
 				const vehicle_status_s &vehicle_status,
-				const ekf2_innovations_s &innov);
+				const ekf2_innovations_2_s &innov);
 	void resetPreFlightChecks();
 
 	template<typename Param>
@@ -266,9 +266,9 @@ private:
 	vehicle_land_detected_s		_vehicle_land_detected{};
 	vehicle_status_s		_vehicle_status{};
 
-	uORB::Publication<ekf2_innovations_s>			_estimator_innovations_pub{ORB_ID(ekf2_innovations)};
-	uORB::Publication<ekf2_innovations_s>			_estimator_innovation_variances_pub{ORB_ID(ekf2_innovation_variances)};
-	uORB::Publication<ekf2_innovations_s>			_estimator_innovation_test_ratios_pub{ORB_ID(ekf2_innovation_test_ratios)};
+	uORB::Publication<ekf2_innovations_2_s>			_estimator_innovations_pub{ORB_ID(ekf2_innovations_2)};
+	uORB::Publication<ekf2_innovations_2_s>			_estimator_innovation_variances_pub{ORB_ID(ekf2_innovation_variances_2)};
+	uORB::Publication<ekf2_innovations_2_s>			_estimator_innovation_test_ratios_pub{ORB_ID(ekf2_innovation_test_ratios_2)};
 	uORB::Publication<ekf2_timestamps_s>			_ekf2_timestamps_pub{ORB_ID(ekf2_timestamps)};
 	uORB::Publication<ekf_gps_drift_s>			_ekf_gps_drift_pub{ORB_ID(ekf_gps_drift)};
 	uORB::Publication<ekf_gps_position_s>			_blended_gps_pub{ORB_ID(ekf_gps_position)};
@@ -1640,7 +1640,7 @@ void Ekf2::Run()
 
 			{
 				// publish estimator innovation data
-				ekf2_innovations_s innovations;
+				ekf2_innovations_2_s innovations;
 				innovations.timestamp = now;
 				_ekf.getGpsVelPosInnov(&innovations.gps_hvel[0], innovations.gps_vvel, &innovations.gps_hpos[0],
 						       innovations.gps_vpos);
@@ -1655,7 +1655,7 @@ void Ekf2::Run()
 				_ekf.getHaglInnov(innovations.hagl);
 
 				// publish estimator innovation variance data
-				ekf2_innovations_s innovation_var;
+				ekf2_innovations_2_s innovation_var;
 				innovation_var.timestamp = now;
 				_ekf.getGpsVelPosInnovVar(&innovation_var.gps_hvel[0], innovation_var.gps_vvel, &innovation_var.gps_hpos[0],
 							  innovation_var.gps_vpos);
@@ -1671,7 +1671,7 @@ void Ekf2::Run()
 				_ekf.getHaglInnovVar(innovation_var.hagl);
 
 				// publish estimator innovation test ratio data
-				ekf2_innovations_s test_ratios;
+				ekf2_innovations_2_s test_ratios;
 				test_ratios.timestamp = now;
 				_ekf.getGpsVelPosInnovRatio(test_ratios.gps_hvel[0], test_ratios.gps_vvel, test_ratios.gps_hpos[0],
 							    test_ratios.gps_vpos);
@@ -1709,7 +1709,7 @@ void Ekf2::Run()
 void Ekf2::runPreFlightChecks(const float dt,
 			      const filter_control_status_u &control_status,
 			      const vehicle_status_s &vehicle_status,
-			      const ekf2_innovations_s &innov)
+			      const ekf2_innovations_2_s &innov)
 {
 	const bool can_observe_heading_in_flight = (vehicle_status.vehicle_type != vehicle_status_s::VEHICLE_TYPE_ROTARY_WING);
 

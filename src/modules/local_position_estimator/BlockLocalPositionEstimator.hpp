@@ -32,7 +32,7 @@
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/estimator_status.h>
-#include <uORB/topics/ekf2_innovations.h>
+#include <uORB/topics/ekf2_innovations_2.h>
 
 using namespace matrix;
 using namespace control;
@@ -273,8 +273,8 @@ private:
 	uORB::PublicationData<vehicle_global_position_s> _pub_gpos{ORB_ID(vehicle_global_position)};
 	uORB::PublicationData<vehicle_odometry_s> _pub_odom{ORB_ID(vehicle_odometry)};
 	uORB::PublicationData<estimator_status_s> _pub_est_status{ORB_ID(estimator_status)};
-	uORB::PublicationData<ekf2_innovations_s> _pub_innov{ORB_ID(ekf2_innovations)};
-	uORB::PublicationData<ekf2_innovations_s> _pub_innov_var{ORB_ID(ekf2_innovation_variances)};
+	uORB::PublicationData<ekf2_innovations_2_s> _pub_innov{ORB_ID(ekf2_innovations_2)};
+	uORB::PublicationData<ekf2_innovations_2_s> _pub_innov_var{ORB_ID(ekf2_innovation_variances_2)};
 
 	// map projection
 	struct map_projection_reference_s _map_ref;
