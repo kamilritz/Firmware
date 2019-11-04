@@ -1609,6 +1609,7 @@ void Ekf2::Run()
 				// publish estimator innovation data
 				estimator_innovations_s innovations;
 				innovations.timestamp = now;
+				_ekf.getFakePosInnov(&innovations.fake_hpos[0], innovations.fake_vpos);
 				_ekf.getGpsVelPosInnov(&innovations.gps_hvel[0], innovations.gps_vvel, &innovations.gps_hpos[0],
 						       innovations.gps_vpos);
 				_ekf.getEvVelPosInnov(&innovations.ev_hvel[0], innovations.ev_vvel, &innovations.ev_hpos[0], innovations.ev_vpos);
@@ -1630,6 +1631,7 @@ void Ekf2::Run()
 				// publish estimator innovation variance data
 				estimator_innovations_s innovation_var;
 				innovation_var.timestamp = now;
+				_ekf.getFakePosInnovVar(&innovation_var.fake_hpos[0], innovation_var.fake_vpos);
 				_ekf.getGpsVelPosInnovVar(&innovation_var.gps_hvel[0], innovation_var.gps_vvel, &innovation_var.gps_hpos[0],
 							  innovation_var.gps_vpos);
 				_ekf.getEvVelPosInnovVar(&innovation_var.ev_hvel[0], innovation_var.ev_vvel, &innovation_var.ev_hpos[0],
@@ -1653,6 +1655,7 @@ void Ekf2::Run()
 				// publish estimator innovation test ratio data
 				estimator_innovations_s test_ratios;
 				test_ratios.timestamp = now;
+				_ekf.getFakePosInnovRatio(test_ratios.fake_hpos[0], test_ratios.fake_vpos);
 				_ekf.getGpsVelPosInnovRatio(test_ratios.gps_hvel[0], test_ratios.gps_vvel, test_ratios.gps_hpos[0],
 							    test_ratios.gps_vpos);
 				_ekf.getEvVelPosInnovRatio(test_ratios.ev_hvel[0], test_ratios.ev_vvel, test_ratios.ev_hpos[0],
