@@ -12,6 +12,10 @@ float32    ev_vvel	# vertical external vision velocity innovation
 float32[2] ev_hpos	# horizontal external vision position innovation
 float32    ev_vpos	# vertical external vision position innovation
 
+# Fake Position
+float32[2] fake_hpos	# fake horizontal position innovation
+float32    fake_vpos	# fake vertical position innovation
+
 # Height sensors
 float32 rng_vpos	# range sensor height innovation
 float32 baro_vpos	# barometer height innovation
