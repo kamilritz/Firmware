@@ -325,6 +325,8 @@ private:
 		(ParamExtFloat<px4::params::EKF2_WIND_NOISE>)
 		_param_ekf2_wind_noise,	///< process noise for wind velocity prediction (m/sec**2)
 		(ParamExtFloat<px4::params::EKF2_TERR_NOISE>) _param_ekf2_terr_noise,	///< process noise for terrain offset (m/sec)
+		(ParamExtFloat<px4::params::EKF2_TERR_GATE>)
+		_param_ekf2_terr_gate,	///< innovation consistency check gate for terrain offset
 		(ParamExtFloat<px4::params::EKF2_TERR_GRAD>)
 		_param_ekf2_terr_grad,	///< gradient of terrain used to estimate process noise due to changing position (m/m)
 
@@ -388,7 +390,7 @@ private:
 		// measurement source control
 		(ParamExtInt<px4::params::EKF2_AID_MASK>)
 		_param_ekf2_aid_mask,		///< bitmasked integer that selects which of the GPS and optical flow aiding sources will be used
-		(ParamExtInt<px4::params::EKF2_HGT_MODE>) _param_ekf2_hgt_mode,	///< selects the primary source for height data
+		(ParamExtInt<px4::params::EKF2_HGT_MODE>) _param_ekf2_hgt_mode,	///< selects sources for height data
 		(ParamExtInt<px4::params::EKF2_NOAID_TOUT>)
 		_param_ekf2_noaid_tout,	///< maximum lapsed time from last fusion of measurements that constrain drift before the EKF will report the horizontal nav solution invalid (uSec)
 
@@ -557,6 +559,7 @@ Ekf2::Ekf2(bool replay_mode):
 	_param_ekf2_mag_b_noise(_params->magb_p_noise),
 	_param_ekf2_wind_noise(_params->wind_vel_p_noise),
 	_param_ekf2_terr_noise(_params->terrain_p_noise),
+	_param_ekf2_terr_gate(_params->terrain_innov_gate),
 	_param_ekf2_terr_grad(_params->terrain_gradient),
 	_param_ekf2_gps_v_noise(_params->gps_vel_noise),
 	_param_ekf2_gps_p_noise(_params->gps_pos_noise),
@@ -589,7 +592,7 @@ Ekf2::Ekf2(bool replay_mode):
 	_param_ekf2_req_hdrift(_params->req_hdrift),
 	_param_ekf2_req_vdrift(_params->req_vdrift),
 	_param_ekf2_aid_mask(_params->fusion_mode),
-	_param_ekf2_hgt_mode(_params->vdist_sensor_type),
+	_param_ekf2_hgt_mode(_params->fusion_hgt_mode),
 	_param_ekf2_noaid_tout(_params->valid_timeout_max),
 	_param_ekf2_rng_noise(_params->range_noise),
 	_param_ekf2_rng_sfe(_params->range_noise_scaler),

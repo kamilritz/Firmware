@@ -631,18 +631,18 @@ PARAM_DEFINE_FLOAT(EKF2_TAS_GATE, 3.0f);
 PARAM_DEFINE_INT32(EKF2_AID_MASK, 1);
 
 /**
- * Determines the primary source of height data used by the EKF.
- *
- * The range sensor option should only be used when for operation over a flat surface as the local NED origin will move up and down with ground level.
+ * Determines thr sourced for height estimation used by the EKF.
  *
  * @group EKF2
- * @value 0 Barometric pressure
- * @value 1 GPS
- * @value 2 Range sensor
- * @value 3 Vision
- * @reboot_required true
+ * @min 1
+ * @max 15
+ * @bit 0 Barometric pressure
+ * @bit 1 GPS
+ * @bit 2 Range sensor
+ * @bit 3 Vision
+ * @reboot_required false
  */
-PARAM_DEFINE_INT32(EKF2_HGT_MODE, 0);
+PARAM_DEFINE_INT32(EKF2_HGT_MODE, 1);
 
 /**
  * Maximum lapsed time from last fusion of measurements that constrain velocity drift before the EKF will report the horizontal nav solution as invalid.
@@ -794,6 +794,16 @@ PARAM_DEFINE_FLOAT(EKF2_OF_GATE, 3.0f);
  * @decimal 1
  */
 PARAM_DEFINE_FLOAT(EKF2_TERR_NOISE, 5.0f);
+
+/**
+ * Terrain altitude innovation consistency check gate size
+ *
+ * @group EKF2
+ * @min 1
+ * @unit SD
+ * @decimal 1
+ */
+PARAM_DEFINE_FLOAT(EKF2_TERR_GATE, 5.0f);
 
 /**
  * Magnitude of terrain gradient
@@ -1159,8 +1169,8 @@ PARAM_DEFINE_FLOAT(EKF2_RNG_A_HMAX, 5.0f);
 /**
  * Gate size used for innovation consistency checks for range aid fusion
  *
- * A lower value means HAGL needs to be more stable in order to use range finder for height estimation
- * in range aid mode
+ * A lower value means that it is rejecting range height measurement faster and performs a reset
+ * of the range sensor height reference earlier.
  *
  * @group EKF2
  * @unit SD
