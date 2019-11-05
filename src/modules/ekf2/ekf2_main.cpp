@@ -57,6 +57,7 @@
 #include <uORB/topics/airspeed.h>
 #include <uORB/topics/distance_sensor.h>
 #include <uORB/topics/estimator_innovations.h>
+#include <uORB/topics/ekf2_hgt_ref.h>
 #include <uORB/topics/ekf2_timestamps.h>
 #include <uORB/topics/ekf_gps_position.h>
 #include <uORB/topics/estimator_status.h>
@@ -270,6 +271,7 @@ private:
 	uORB::Publication<estimator_innovations_s>			_estimator_innovations_pub{ORB_ID(estimator_innovations)};
 	uORB::Publication<estimator_innovations_s>			_estimator_innovation_variances_pub{ORB_ID(estimator_innovation_variances)};
 	uORB::Publication<estimator_innovations_s>			_estimator_innovation_test_ratios_pub{ORB_ID(estimator_innovation_test_ratios)};
+	uORB::Publication<ekf2_hgt_ref_s>			_estimator_hgt_ref_pub{ORB_ID(ekf2_hgt_ref)};
 	uORB::Publication<ekf2_timestamps_s>			_ekf2_timestamps_pub{ORB_ID(ekf2_timestamps)};
 	uORB::Publication<ekf_gps_drift_s>			_ekf_gps_drift_pub{ORB_ID(ekf_gps_drift)};
 	uORB::Publication<ekf_gps_position_s>			_blended_gps_pub{ORB_ID(ekf_gps_position)};
@@ -1670,6 +1672,13 @@ void Ekf2::Run()
 				test_ratios.fake_hpos[0] = test_ratios.fake_hpos[1] = test_ratios.fake_vpos = NAN;
 				test_ratios.fake_hvel[0] = test_ratios.fake_hvel[1] = test_ratios.fake_vvel = NAN;
 
+				ekf2_hgt_ref_s hgt_ref;
+				hgt_ref.timestamp = now;
+				hgt_ref.baro = _ekf.getBaroRefHgt();
+				hgt_ref.gps = _ekf.getGpsRefHgt();
+				hgt_ref.range = _ekf.getRangeRefHgt();
+				hgt_ref.ev = _ekf.getEvRefHgt();
+
 				// calculate noise filtered velocity innovations which are used for pre-flight checking
 				if (_vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_STANDBY) {
 					float dt_seconds = sensors.accelerometer_integral_dt * 1e-6f;
@@ -1682,6 +1691,7 @@ void Ekf2::Run()
 				_estimator_innovations_pub.publish(innovations);
 				_estimator_innovation_variances_pub.publish(innovation_var);
 				_estimator_innovation_test_ratios_pub.publish(test_ratios);
+				_estimator_hgt_ref_pub.publish(hgt_ref);
 
 			}
 		}
