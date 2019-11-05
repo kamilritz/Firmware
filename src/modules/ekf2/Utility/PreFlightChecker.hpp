@@ -42,7 +42,7 @@
 #pragma once
 
 #include <uORB/topics/vehicle_status.h>
-#include <uORB/topics/ekf2_innovations_2.h>
+#include <uORB/topics/estimator_innovations.h>
 
 #include <matrix/matrix/math.hpp>
 
@@ -66,7 +66,7 @@ public:
 	 * @param dt the sampling time
 	 * @param innov the ekf2_innovation_s struct containing the current innovations
 	 */
-	void update(float dt, const ekf2_innovations_2_s &innov);
+	void update(float dt, const estimator_innovations_s &innov);
 
 	/*
 	 * If set to true, the checker will use a less conservative heading innovation check
@@ -128,12 +128,12 @@ public:
 	static constexpr float sq(float var) { return var * var; }
 
 private:
-	bool preFlightCheckHeadingFailed(const ekf2_innovations_2_s &innov, float alpha);
+	bool preFlightCheckHeadingFailed(const estimator_innovations_s &innov, float alpha);
 	float selectHeadingTestLimit();
 
-	bool preFlightCheckHorizVelFailed(const ekf2_innovations_2_s &innov, float alpha);
-	bool preFlightCheckVertVelFailed(const ekf2_innovations_2_s &innov, float alpha);
-	bool preFlightCheckHeightFailed(const ekf2_innovations_2_s &innov, float alpha);
+	bool preFlightCheckHorizVelFailed(const estimator_innovations_s &innov, float alpha);
+	bool preFlightCheckVertVelFailed(const estimator_innovations_s &innov, float alpha);
+	bool preFlightCheckHeightFailed(const estimator_innovations_s &innov, float alpha);
 
 	void resetPreFlightChecks();
 
