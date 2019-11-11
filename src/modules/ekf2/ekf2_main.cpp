@@ -57,7 +57,6 @@
 #include <uORB/topics/airspeed.h>
 #include <uORB/topics/distance_sensor.h>
 #include <uORB/topics/estimator_innovations.h>
-#include <uORB/topics/ekf2_innovations.h>	// Deprecated message
 #include <uORB/topics/ekf2_timestamps.h>
 #include <uORB/topics/ekf_gps_position.h>
 #include <uORB/topics/estimator_status.h>
@@ -267,7 +266,6 @@ private:
 	vehicle_land_detected_s		_vehicle_land_detected{};
 	vehicle_status_s		_vehicle_status{};
 
-	uORB::Publication<ekf2_innovations_s>			_ekf2_innovations_pub{ORB_ID(ekf2_innovations)};
 	uORB::Publication<estimator_innovations_s>			_estimator_innovations_pub{ORB_ID(estimator_innovations)};
 	uORB::Publication<estimator_innovations_s>			_estimator_innovation_variances_pub{ORB_ID(estimator_innovation_variances)};
 	uORB::Publication<estimator_innovations_s>			_estimator_innovation_test_ratios_pub{ORB_ID(estimator_innovation_test_ratios)};
@@ -1701,48 +1699,6 @@ void Ekf2::Run()
 				_estimator_innovation_variances_pub.publish(innovation_var);
 				_estimator_innovation_test_ratios_pub.publish(test_ratios);
 
-				// TODO: remove this as soon people have moved to estimator_innovations.
-				// publish DEPRECATED ekf2_innovation msg
-				ekf2_innovations_s innovations_deprecated;
-				innovations_deprecated.timestamp = now;
-				innovations_deprecated.vel_pos_innov[0] = innovations.gps_hvel[0];
-				innovations_deprecated.vel_pos_innov[1] = innovations.gps_hvel[1];
-				innovations_deprecated.vel_pos_innov[2] = innovations.gps_vvel;
-				innovations_deprecated.vel_pos_innov[3] = innovations.gps_hpos[0];
-				innovations_deprecated.vel_pos_innov[4] = innovations.gps_hpos[1];
-				innovations_deprecated.vel_pos_innov[5] = innovations.gps_vpos;
-				innovations_deprecated.aux_vel_innov[0] = innovations.aux_hvel[0];
-				innovations_deprecated.aux_vel_innov[1] = innovations.aux_hvel[1];
-				innovations_deprecated.mag_innov[0] = innovations.mag[0];
-				innovations_deprecated.mag_innov[1] = innovations.mag[1];
-				innovations_deprecated.mag_innov[2] = innovations.mag[2];
-				innovations_deprecated.heading_innov = innovations.heading;
-				innovations_deprecated.beta_innov = innovations.beta;
-				innovations_deprecated.airspeed_innov = innovations.airspeed;
-				innovations_deprecated.flow_innov[0] = innovations.flow[0];
-				innovations_deprecated.flow_innov[1] = innovations.flow[1];
-				innovations_deprecated.hagl_innov = innovations.hagl;
-				innovations_deprecated.drag_innov[0] = innovations.drag[0];
-				innovations_deprecated.drag_innov[1] = innovations.drag[1];
-				innovations_deprecated.vel_pos_innov_var[0] = innovation_var.gps_hvel[0];
-				innovations_deprecated.vel_pos_innov_var[1] = innovation_var.gps_hvel[1];
-				innovations_deprecated.vel_pos_innov_var[2] = innovation_var.gps_vvel;
-				innovations_deprecated.vel_pos_innov_var[3] = innovation_var.gps_hpos[0];
-				innovations_deprecated.vel_pos_innov_var[4] = innovation_var.gps_hpos[1];
-				innovations_deprecated.vel_pos_innov_var[5] = innovation_var.gps_vpos;
-				innovations_deprecated.mag_innov_var[0] = innovation_var.mag[0];
-				innovations_deprecated.mag_innov_var[1] = innovation_var.mag[1];
-				innovations_deprecated.mag_innov_var[2] = innovation_var.mag[2];
-				innovations_deprecated.heading_innov_var = innovation_var.heading;
-				innovations_deprecated.beta_innov_var = innovation_var.beta;
-				innovations_deprecated.airspeed_innov_var = innovation_var.airspeed;
-				innovations_deprecated.flow_innov_var[0] = innovation_var.flow[0];
-				innovations_deprecated.flow_innov_var[1] = innovation_var.flow[1];
-				innovations_deprecated.hagl_innov_var = innovation_var.hagl;
-				innovations_deprecated.drag_innov_var[0] = innovation_var.drag[0];
-				innovations_deprecated.drag_innov_var[1] = innovation_var.drag[1];
-				_ekf.get_output_tracking_error(&innovations_deprecated.output_tracking_error[0]);
-				_ekf2_innovations_pub.publish(innovations_deprecated);
 			}
 		}
 
