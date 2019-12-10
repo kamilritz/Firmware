@@ -796,16 +796,6 @@ PARAM_DEFINE_FLOAT(EKF2_OF_GATE, 3.0f);
 PARAM_DEFINE_FLOAT(EKF2_TERR_NOISE, 5.0f);
 
 /**
- * Terrain altitude innovation consistency check gate size
- *
- * @group EKF2
- * @min 1
- * @unit SD
- * @decimal 1
- */
-PARAM_DEFINE_FLOAT(EKF2_TERR_GATE, 5.0f);
-
-/**
  * Magnitude of terrain gradient
  *
  * @group EKF2

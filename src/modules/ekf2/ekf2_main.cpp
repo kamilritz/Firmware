@@ -324,9 +324,8 @@ private:
 		_param_ekf2_mag_b_noise,	///< process noise for body magnetic field prediction (Gauss/sec)
 		(ParamExtFloat<px4::params::EKF2_WIND_NOISE>)
 		_param_ekf2_wind_noise,	///< process noise for wind velocity prediction (m/sec**2)
-		(ParamExtFloat<px4::params::EKF2_TERR_NOISE>) _param_ekf2_terr_noise,	///< process noise for terrain offset (m/sec)
-		(ParamExtFloat<px4::params::EKF2_TERR_GATE>)
-		_param_ekf2_terr_gate,	///< innovation consistency check gate for terrain offset
+		(ParamExtFloat<px4::params::EKF2_TERR_NOISE>)
+		_param_ekf2_terr_noise,	///< process noise for terrain offset (m/sec)
 		(ParamExtFloat<px4::params::EKF2_TERR_GRAD>)
 		_param_ekf2_terr_grad,	///< gradient of terrain used to estimate process noise due to changing position (m/m)
 
@@ -559,7 +558,6 @@ Ekf2::Ekf2(bool replay_mode):
 	_param_ekf2_mag_b_noise(_params->magb_p_noise),
 	_param_ekf2_wind_noise(_params->wind_vel_p_noise),
 	_param_ekf2_terr_noise(_params->terrain_p_noise),
-	_param_ekf2_terr_gate(_params->terrain_innov_gate),
 	_param_ekf2_terr_grad(_params->terrain_gradient),
 	_param_ekf2_gps_v_noise(_params->gps_vel_noise),
 	_param_ekf2_gps_p_noise(_params->gps_pos_noise),
@@ -1612,7 +1610,8 @@ void Ekf2::Run()
 				// publish estimator innovation data
 				estimator_innovations_s innovations;
 				innovations.timestamp = now;
-				_ekf.getFakePosInnov(&innovations.fake_hpos[0], innovations.fake_vpos);
+				_ekf.getFakeVelPosInnov(&innovations.fake_hvel[0], innovations.fake_vvel, &innovations.fake_hpos[0],
+							innovations.fake_vpos);
 				_ekf.getGpsVelPosInnov(&innovations.gps_hvel[0], innovations.gps_vvel, &innovations.gps_hpos[0],
 						       innovations.gps_vpos);
 				_ekf.getEvVelPosInnov(&innovations.ev_hvel[0], innovations.ev_vvel, &innovations.ev_hpos[0], innovations.ev_vpos);
@@ -1626,6 +1625,7 @@ void Ekf2::Run()
 				_ekf.getAirspeedInnov(innovations.airspeed);
 				_ekf.getBetaInnov(innovations.beta);
 				_ekf.getHaglInnov(innovations.hagl);
+
 				// Not yet supported
 				innovations.aux_vvel = NAN;
 				innovations.fake_hpos[0] = innovations.fake_hpos[1] = innovations.fake_vpos = NAN;
@@ -1634,7 +1634,8 @@ void Ekf2::Run()
 				// publish estimator innovation variance data
 				estimator_innovations_s innovation_var;
 				innovation_var.timestamp = now;
-				_ekf.getFakePosInnovVar(&innovation_var.fake_hpos[0], innovation_var.fake_vpos);
+				_ekf.getFakeVelPosInnovVar(&innovation_var.fake_hvel[0], innovation_var.fake_vvel, &innovation_var.fake_hpos[0],
+							   innovation_var.fake_vpos);
 				_ekf.getGpsVelPosInnovVar(&innovation_var.gps_hvel[0], innovation_var.gps_vvel, &innovation_var.gps_hpos[0],
 							  innovation_var.gps_vpos);
 				_ekf.getEvVelPosInnovVar(&innovation_var.ev_hvel[0], innovation_var.ev_vvel, &innovation_var.ev_hpos[0],
@@ -1658,7 +1659,8 @@ void Ekf2::Run()
 				// publish estimator innovation test ratio data
 				estimator_innovations_s test_ratios;
 				test_ratios.timestamp = now;
-				_ekf.getFakePosInnovRatio(test_ratios.fake_hpos[0], test_ratios.fake_vpos);
+				_ekf.getFakeVelPosInnovRatio(test_ratios.fake_hvel[0], test_ratios.fake_vvel, test_ratios.fake_hpos[0],
+							     test_ratios.fake_vpos);
 				_ekf.getGpsVelPosInnovRatio(test_ratios.gps_hvel[0], test_ratios.gps_vvel, test_ratios.gps_hpos[0],
 							    test_ratios.gps_vpos);
 				_ekf.getEvVelPosInnovRatio(test_ratios.ev_hvel[0], test_ratios.ev_vvel, test_ratios.ev_hpos[0],
