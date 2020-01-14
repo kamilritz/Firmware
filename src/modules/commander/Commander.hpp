@@ -377,7 +377,6 @@ private:
 
 	bool		_vio_system_status_change{false};
 	uint8_t	_datalink_last_status_vio_system{telemetry_status_s::MAV_STATE_UNINIT};
-	bool _print_avoidance_msg_once{false};
 	bool _print_vio_msg_once{false};
 
 
