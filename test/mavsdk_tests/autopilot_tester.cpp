@@ -33,6 +33,7 @@
 
 #include "autopilot_tester.h"
 #include <iostream>
+#include <cmath>
 #include <future>
 
 std::string connection_url {"udp://"};
@@ -241,7 +242,13 @@ bool AutopilotTester::estimated_horizontal_position_close_to(const Offboard::Pos
 void AutopilotTester::request_ground_truth()
 {
 	CHECK(_telemetry->set_rate_ground_truth(15) == Telemetry::Result::SUCCESS);
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	CHECK(poll_condition_with_timeout(
+	[this]() {
+		const Telemetry::GroundTruth gt_pos = get_ground_truth_position();
+		const bool reasonable_data = !std::isnan(gt_pos.latitude_deg) &&
+					     !std::isnan(gt_pos.longitude_deg);
+		return reasonable_data;
+	 }, std::chrono::seconds(15)));
 }
 
 Telemetry::GroundTruth AutopilotTester::get_ground_truth_position()
