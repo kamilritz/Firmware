@@ -262,6 +262,9 @@ bool AutopilotTester::ground_truth_horizontal_position_close_to(const Telemetry:
 	CHECK(std::isfinite(current_pos.latitude_deg));
 	CHECK(std::isfinite(current_pos.longitude_deg));
 	LocalCoordinate local_pos = ct.local_from_global(GlobalCoordinate{current_pos.latitude_deg, current_pos.longitude_deg});
-
-	return sq(local_pos.north_m) + sq(local_pos.east_m) < sq(acceptance_radius_m);
+	float dist_to_target = sqrt(sq(local_pos.north_m) + sq(local_pos.east_m));
+	std::cout << "Target position:  " << target_pos << std::endl;
+	std::cout << "Current position: " << target_pos << std::endl;
+	std::cout << "Horizontal Distance: " << dist_to_target << std::endl;
+	return dist_to_target < acceptance_radius_m;
 }
